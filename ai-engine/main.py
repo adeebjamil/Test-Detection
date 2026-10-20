@@ -100,13 +100,33 @@ def write_preview(cam_id, frame, tracks, line, counts):
         c = PREVIEW_COLORS.get(t.cls, (255, 255, 255))
         x1, y1, x2, y2 = int(t.box[0] * w), int(t.box[1] * h), int(t.box[2] * w), int(t.box[3] * h)
         cv2.rectangle(img, (x1, y1), (x2, y2), c, 2, cv2.LINE_AA)
-        label = f"{t.cls} #{t.id}"
-        if t.cls == "person":
+        
+        if t.cls in ("dog", "cat"):
+            label = f"#{t.id} {t.cls.capitalize()}"
+        else:
             g, a = t.demographics()
-            label += f" {'M' if g == 'male' else 'F' if g == 'female' else '?'}{' kid' if a == 'child' else ''}"
-        (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-        cv2.rectangle(img, (x1, max(0, y1 - th - 8)), (x1 + tw + 8, y1), c, -1)
-        cv2.putText(img, label, (x1 + 4, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (20, 20, 20), 1, cv2.LINE_AA)
+            gender_str = "Male" if g == "male" else "Female" if g == "female" else ""
+            kid_str = " Kid" if a == "child" else ""
+            attire_str = ""
+            if t.attire in ("male_emirati", "female_emirati"):
+                attire_str = "Emirati"
+            elif t.attire in ("male_non_emirati", "female_non_emirati"):
+                attire_str = "Non-Emirati"
+
+            parts = [f"#{t.id}"]
+            if gender_str or kid_str:
+                parts.append(f"{gender_str}{kid_str}".strip())
+            elif not attire_str:
+                parts.append("Person")
+            if attire_str:
+                parts.append(attire_str)
+
+            label = " ".join(parts)
+
+        (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.48, 1)
+        pill_y1 = max(0, y1 - th - 8)
+        cv2.rectangle(img, (x1, pill_y1), (min(w, x1 + tw + 8), y1), c, -1)
+        cv2.putText(img, label, (x1 + 4, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (20, 20, 20), 1, cv2.LINE_AA)
         cv2.circle(img, (int(t.x * w), int(t.y * h)), 4, c, -1)
     cv2.rectangle(img, (10, 10), (200, 42), (30, 30, 30), -1)
     cv2.putText(img, f"IN {counts['IN']}   OUT {counts['OUT']}", (20, 33), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2, cv2.LINE_AA)
