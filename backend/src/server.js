@@ -224,7 +224,7 @@ const PUBLIC_PATHS = new Set([
 const isEngineRoute = (req) =>
   (req.method === "POST" && /^\/api\/events(\/(update|cancel))?$/.test(req.path)) ||
   (req.path.startsWith("/api/engine/") && req.path !== "/api/engine/status") ||
-  /^\/api\/cameras\/\d+\/heartbeat$/.test(req.path);
+  /^\/api\/cameras\/\d+\/(heartbeat|counts)$/.test(req.path);
 
 app.use((req, res, next) => {
   if (isEngineRoute(req)) {
@@ -346,6 +346,26 @@ app.post("/api/cameras/:id/heartbeat", (q, r) => {
     .run(stream_status, error || null, processing_fps ?? null, frame_width ?? null, frame_height ?? null, stream_status, nowIso(), id);
   if (before?.stream_status !== stream_status) broadcast("cameras");
   r.json({ ok: true });
+});
+
+// Today's camera breakdown counts for the AI engine preview HUD overlay
+app.get("/api/cameras/:id/counts", (q, r) => {
+  const id = Number(q.params.id);
+  const today = periodRange("today");
+  const s = today.start.toISOString(), e = today.end.toISOString();
+  const row = db.prepare(`
+    SELECT
+      COALESCE(SUM(object_type='person' AND direction='IN'),0) AS "IN",
+      COALESCE(SUM(object_type='person' AND direction='OUT'),0) AS "OUT",
+      COALESCE(SUM(object_type='person' AND gender_estimate='male'),0) AS male,
+      COALESCE(SUM(object_type='person' AND gender_estimate='female'),0) AS female,
+      COALESCE(SUM(object_type='person' AND cultural_attire_estimate='emirati_traditional'),0) AS emirati,
+      COALESCE(SUM(object_type='person' AND cultural_attire_estimate='international_casual'),0) AS non_emirati,
+      COALESCE(SUM(object_type='dog'),0) AS dog,
+      COALESCE(SUM(object_type='cat'),0) AS cat
+    FROM events WHERE camera_id=? AND occurred_at >= ? AND occurred_at < ?
+  `).get(id, s, e) || {};
+  r.json(row);
 });
 
 // Real-time channel for the signed-in dashboard (auth enforced by the guard above)

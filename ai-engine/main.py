@@ -127,9 +127,30 @@ def write_preview(cam_id, frame, tracks, line, counts):
         pill_y1 = max(0, y1 - th - 8)
         cv2.rectangle(img, (x1, pill_y1), (min(w, x1 + tw + 8), y1), c, -1)
         cv2.putText(img, label, (x1 + 4, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (20, 20, 20), 1, cv2.LINE_AA)
-        cv2.circle(img, (int(t.x * w), int(t.y * h)), 4, c, -1)
-    cv2.rectangle(img, (10, 10), (200, 42), (30, 30, 30), -1)
-    cv2.putText(img, f"IN {counts['IN']}   OUT {counts['OUT']}", (20, 33), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2, cv2.LINE_AA)
+    in_cnt = counts.get("IN", 0)
+    out_cnt = counts.get("OUT", 0)
+    male_cnt = counts.get("male", 0)
+    fem_cnt = counts.get("female", 0)
+    em_cnt = counts.get("emirati", 0)
+    non_cnt = counts.get("non_emirati", 0)
+    dog_cnt = counts.get("dog", 0)
+    cat_cnt = counts.get("cat", 0)
+
+    hud_w, hud_h = min(w - 20, 500), 68
+    if h > hud_h + 20 and w > hud_w + 20:
+        sub_img = img[10:10 + hud_h, 10:10 + hud_w]
+        black_rect = np.full(sub_img.shape, 20, dtype=np.uint8)
+        img[10:10 + hud_h, 10:10 + hud_w] = cv2.addWeighted(sub_img, 0.15, black_rect, 0.85, 0)
+        cv2.rectangle(img, (10, 10), (10 + hud_w, 10 + hud_h), (75, 80, 95), 1, cv2.LINE_AA)
+
+        l1 = f"IN: {in_cnt}   OUT: {out_cnt}   |   Male: {male_cnt}   Female: {fem_cnt}"
+        l2 = f"Emirati: {em_cnt}   Non-Emirati: {non_cnt}   |   Dog: {dog_cnt}   Cat: {cat_cnt}"
+
+        cv2.putText(img, l1, (22, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.putText(img, l2, (22, 63), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (210, 230, 255), 1, cv2.LINE_AA)
+    else:
+        cv2.rectangle(img, (10, 10), (200, 42), (30, 30, 30), -1)
+        cv2.putText(img, f"IN {in_cnt}   OUT {out_cnt}", (20, 33), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2, cv2.LINE_AA)
     _write_jpg(cam_id, img)
 
 
@@ -761,8 +782,15 @@ class CameraWorker(threading.Thread):
         last_proc, last_hb, win_start = 0.0, 0.0, time.time()
         fps = None
         w = h = None
-        live_tracks, live_counts, last_prev = [], {"IN": 0, "OUT": 0}, 0.0  # TEMP-LIVE-PREVIEW
-        pending = []  # [track, direction, crossed_ts, event_key, sent_demographics]
+        live_tracks, last_prev = [], 0.0
+        live_counts = {"IN": 0, "OUT": 0, "male": 0, "female": 0, "emirati": 0, "non_emirati": 0, "dog": 0, "cat": 0}
+        try:
+            c_data = api("GET", f"/cameras/{self.id}/counts", timeout=2)
+            if c_data and isinstance(c_data, dict):
+                live_counts.update({k: int(v) for k, v in c_data.items() if k in live_counts and v is not None})
+        except Exception:
+            pass
+        pending = []  # [track, direction, crossed_ts, event_key, sent_demographics, sent_attire]
 
         def emit(t, direction, iso, key):
             gender, age = t.demographics() if t.cls == "person" else (None, None)
@@ -776,7 +804,7 @@ class CameraWorker(threading.Thread):
         def refine(force=False):
             keep = []
             for p in pending:
-                t, direction, ts, key, sent = p
+                t, direction, ts, key, sent = p[:5]
                 if not (force or t.id not in tracker.tracks or time.time() - ts >= PENDING_SECONDS):
                     keep.append(p)
                     continue
@@ -785,6 +813,18 @@ class CameraWorker(threading.Thread):
                     if final != sent:
                         SENDER.send("update", {"camera_id": self.id, "track_id": key,
                                                "gender_estimate": final[0], "age_group_estimate": final[1]})
+                        old_g, new_g = sent[0], final[0]
+                        if old_g != new_g:
+                            if old_g in ("male", "female"):
+                                live_counts[old_g] = max(0, live_counts[old_g] - 1)
+                            if new_g in ("male", "female"):
+                                live_counts[new_g] += 1
+                    if len(p) > 5 and p[5] == "unclassified" and t.attire != "unclassified":
+                        p[5] = t.attire
+                        if t.attire in ("male_emirati", "female_emirati"):
+                            live_counts["emirati"] += 1
+                        elif t.attire in ("male_non_emirati", "female_non_emirati"):
+                            live_counts["non_emirati"] += 1
                     pm = t.p_male() or -1
                     log(f"Camera {self.id}: person {direction} -> {final[0]}/{final[1]} "
                         f"(p_male {pm:.2f}, body {t.body_n}, faces {t.face_n}, track {t.id}) {t.body_ps[-12:]}")
@@ -827,14 +867,38 @@ class CameraWorker(threading.Thread):
                     if opposite:  # stepped back over the line within 2s -> not a real entry/exit
                         pending.remove(opposite)
                         SENDER.send("cancel", {"camera_id": self.id, "track_id": opposite[3]})
-                        live_counts[opposite[1]] -= 1  # TEMP-LIVE-PREVIEW
+                        live_counts[opposite[1]] = max(0, live_counts[opposite[1]] - 1)
+                        if t.cls == "person":
+                            g = opposite[4][0]
+                            if g in ("male", "female"):
+                                live_counts[g] = max(0, live_counts[g] - 1)
+                            if len(opposite) > 5:
+                                att = opposite[5]
+                                if att in ("male_emirati", "female_emirati"):
+                                    live_counts["emirati"] = max(0, live_counts["emirati"] - 1)
+                                elif att in ("male_non_emirati", "female_non_emirati"):
+                                    live_counts["non_emirati"] = max(0, live_counts["non_emirati"] - 1)
+                        elif t.cls in ("dog", "cat"):
+                            live_counts[t.cls] = max(0, live_counts[t.cls] - 1)
                         log(f"Camera {self.id}: cancelled back-and-forth crossing (track {t.id})")
                         continue
                     crossing_no += 1
                     key = f"C{self.id}-{session}-T{t.id}-{crossing_no}"
                     sent = emit(t, direction, utc_now(), key)   # counted on the dashboard immediately
-                    pending.append([t, direction, now, key, sent])
-                    live_counts[direction] += 1  # TEMP-LIVE-PREVIEW
+                    pending.append([t, direction, now, key, sent, t.attire])
+                    live_counts[direction] += 1
+                    if t.cls == "person":
+                        g, _ = sent
+                        if g == "male":
+                            live_counts["male"] += 1
+                        elif g == "female":
+                            live_counts["female"] += 1
+                        if t.attire in ("male_emirati", "female_emirati"):
+                            live_counts["emirati"] += 1
+                        elif t.attire in ("male_non_emirati", "female_non_emirati"):
+                            live_counts["non_emirati"] += 1
+                    elif t.cls in ("dog", "cat"):
+                        live_counts[t.cls] += 1
                 refine()
 
                 if LIVE_PREVIEW and now - last_prev >= 1.0 / PREVIEW_FPS:  # TEMP-LIVE-PREVIEW
