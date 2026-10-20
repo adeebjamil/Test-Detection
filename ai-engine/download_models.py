@@ -56,7 +56,7 @@ def main() -> None:
     print("Detector models:")
     for n, u in DETECTOR.items():
         fetch(n, u)
-    if "--demographics" in sys.argv:
+    if "--no-demographics" not in sys.argv:
         print("Demographic models:")
         for n, u in {**DEMOGRAPHICS, **OPENVINO}.items():
             fetch(n, u)

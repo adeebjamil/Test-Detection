@@ -206,8 +206,13 @@ class Demographics:
         self.agegen = _OV_AGEGEN.create_infer_request() if HAS_OV else None
         self.face = cv2.dnn.readNet(str(FACE_MODEL), str(FACE_PROTO)) if HAS_FACE_DET and HAS_OV else None
         model_file = MODELS / "emirati_model_best.pt"
-        self.emirati = EmiratiClassifier(str(model_file)) \
-            if (EmiratiClassifier is not None and model_file.exists()) else None
+        self.emirati = None
+        if EmiratiClassifier is not None and model_file.exists():
+            try:
+                self.emirati = EmiratiClassifier(str(model_file))
+            except Exception as e:
+                log(f"EmiratiClassifier disabled ({e}) — run: pip install ultralytics")
+                self.emirati = None
 
     @property
     def enabled(self):
