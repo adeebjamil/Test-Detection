@@ -782,7 +782,8 @@ class CameraWorker(threading.Thread):
         last_proc, last_hb, win_start = 0.0, 0.0, time.time()
         fps = None
         w = h = None
-        live_tracks, last_prev = [], 0.0
+        live_tracks, last_prev, last_count_sync = [], 0.0, 0.0
+        is_syncing = False
         live_counts = {"IN": 0, "OUT": 0, "male": 0, "female": 0, "emirati": 0, "non_emirati": 0, "dog": 0, "cat": 0}
         try:
             c_data = api("GET", f"/cameras/{self.id}/counts", timeout=2)
@@ -900,6 +901,21 @@ class CameraWorker(threading.Thread):
                     elif t.cls in ("dog", "cat"):
                         live_counts[t.cls] += 1
                 refine()
+
+                if now - last_count_sync >= 2.0 and not is_syncing:
+                    last_count_sync = now
+                    is_syncing = True
+                    def _sync(cid=self.id):
+                        nonlocal is_syncing
+                        try:
+                            c = api("GET", f"/cameras/{cid}/counts", timeout=2)
+                            if c and isinstance(c, dict):
+                                live_counts.update({k: int(v) for k, v in c.items() if k in live_counts and v is not None})
+                        except Exception:
+                            pass
+                        finally:
+                            is_syncing = False
+                    threading.Thread(target=_sync, daemon=True).start()
 
                 if LIVE_PREVIEW and now - last_prev >= 1.0 / PREVIEW_FPS:  # TEMP-LIVE-PREVIEW
                     last_prev = now

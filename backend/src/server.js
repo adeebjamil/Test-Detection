@@ -605,6 +605,8 @@ app.put("/api/settings/reset", (q, r) => {
 
 app.post("/api/analytics/reset", (_q, r) => {
   setSetting("manual_reset_at", nowIso());
+  broadcast("events");
+  broadcast("analytics");
   r.json(resetStatus());
 });
 
@@ -613,6 +615,8 @@ app.post("/api/analytics/clear", (q, r) => {
   if (!verifyPassword(String(q.body?.password || ""), user.password_hash)) return r.status(400).json({ error: "Password is incorrect" });
   const n = db.prepare("DELETE FROM events").run().changes;
   setSetting("manual_reset_at", null);
+  broadcast("events");
+  broadcast("analytics");
   r.json({ ok: true, deleted: n, ...resetStatus() });
 });
 
