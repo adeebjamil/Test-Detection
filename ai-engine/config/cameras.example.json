@@ -1,0 +1,56 @@
+{
+  "cameras": [
+    {
+      "id": 1,
+      "name": "Entrance 1",
+      "enabled": false,
+      "rtsp_env": "CAMERA_1_RTSP",
+      "in_direction": "top_to_bottom",
+      "line": [
+        0.1,
+        0.5,
+        0.9,
+        0.5
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Entrance 2",
+      "enabled": false,
+      "rtsp_env": "CAMERA_2_RTSP",
+      "in_direction": "top_to_bottom",
+      "line": [
+        0.1,
+        0.5,
+        0.9,
+        0.5
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Entrance 3",
+      "enabled": false,
+      "rtsp_env": "CAMERA_3_RTSP",
+      "in_direction": "top_to_bottom",
+      "line": [
+        0.1,
+        0.5,
+        0.9,
+        0.5
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Entrance 4",
+      "enabled": false,
+      "rtsp_env": "CAMERA_4_RTSP",
+      "in_direction": "top_to_bottom",
+      "line": [
+        0.1,
+        0.5,
+        0.9,
+        0.5
+      ]
+    }
+  ]
+}

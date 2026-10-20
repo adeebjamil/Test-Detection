@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================================
+   Paper Dashboard theme — light (warm paper) and dark (charcoal)
+   Values are "R G B" triplets so Tailwind opacity modifiers keep working.
+   ===================================================================== */
+:root {
+  color-scheme: light;
+  --page: 244 243 239;      /* #f4f3ef */
+  --card: 255 255 255;
+  --sidebar: 33 33 32;      /* #212120 */
+  --shadow-a: 0.15;
+
+  --slate-50: 246 245 241;  --slate-100: 239 237 231; --slate-200: 225 222 214; --slate-300: 207 203 193;
+  --slate-400: 158 156 151; --slate-500: 122 121 118; --slate-600: 94 94 92;    --slate-700: 64 61 57;
+  --slate-800: 44 44 42;    --slate-900: 37 36 34;
+
+  /* Primary #51cbce */
+  --blue-50: 236 249 249;  --blue-100: 212 243 244; --blue-200: 172 231 233; --blue-300: 133 219 221;
+  --blue-400: 104 210 213; --blue-500: 81 203 206;  --blue-600: 52 181 184;  --blue-700: 31 136 139;
+  --blue-800: 25 107 109;  --blue-900: 19 79 81;
+  --indigo-50: 236 247 249; --indigo-100: 210 238 243; --indigo-200: 170 222 232; --indigo-300: 130 205 221;
+  --indigo-400: 100 192 214; --indigo-500: 81 188 218; --indigo-600: 52 160 190; --indigo-700: 35 122 148;
+  --indigo-800: 27 95 115; --indigo-900: 20 70 85;
+  /* Success #6bd098 */
+  --emerald-50: 237 249 242; --emerald-100: 213 242 225; --emerald-200: 178 230 200; --emerald-300: 150 222 181;
+  --emerald-400: 128 215 166; --emerald-500: 107 208 152; --emerald-600: 64 178 116; --emerald-700: 36 132 82;
+  --emerald-800: 28 104 64; --emerald-900: 20 76 47;
+  /* Orange #f17e5d */
+  --orange-50: 254 241 237; --orange-100: 252 224 216; --orange-200: 248 196 181; --orange-300: 246 168 146;
+  --orange-400: 243 146 118; --orange-500: 241 126 93; --orange-600: 224 96 60; --orange-700: 178 70 40;
+  --orange-800: 140 55 32; --orange-900: 102 40 23;
+  /* Warning #fbc658 */
+  --amber-50: 254 248 232; --amber-100: 254 239 204; --amber-200: 253 225 163; --amber-300: 252 214 130;
+  --amber-400: 251 206 108; --amber-500: 251 198 88; --amber-600: 222 162 36; --amber-700: 160 112 12;
+  --amber-800: 125 88 10; --amber-900: 92 64 8;
+  /* Danger #ef8157 */
+  --rose-50: 253 240 235; --rose-100: 251 223 212; --rose-200: 248 199 181; --rose-300: 245 170 142;
+  --rose-400: 242 148 112; --rose-500: 239 129 87; --rose-600: 218 92 50; --rose-700: 172 64 30;
+  --rose-800: 135 50 24; --rose-900: 98 36 17;
+  --violet-50: 245 241 254; --violet-100: 234 226 253; --violet-200: 214 200 251; --violet-300: 190 170 248;
+  --violet-400: 165 140 242; --violet-500: 145 116 236; --violet-600: 124 92 222; --violet-700: 98 68 190;
+  --violet-800: 76 52 150; --violet-900: 56 38 110;
+  --pink-50: 253 238 245; --pink-100: 251 219 233; --pink-200: 247 189 214; --pink-300: 242 156 193;
+  --pink-400: 236 124 172; --pink-500: 230 98 154; --pink-600: 214 70 134; --pink-700: 170 48 104;
+  --pink-800: 134 38 82; --pink-900: 98 28 60;
+
+  /* Chart / SVG colours */
+  --c-primary: #51cbce; --c-info: #51bcda; --c-success: #6bd098; --c-warning: #fbc658;
+  --c-orange: #f17e5d; --c-danger: #ef8157; --c-violet: #9174ec; --c-pink: #e6629a;
+  --c-muted: #9a9a9a; --c-grid: #ebe9e3; --c-tick: #9a9a9a; --c-unknown: #d6d3cb;
+  --tt-bg: #ffffff; --tt-text: #252422;
+}
+
+.dark {
+  color-scheme: dark;
+  --page: 24 24 23;
+  --card: 36 35 33;
+  --sidebar: 18 18 17;
+  --shadow-a: 0.5;
+
+  --slate-50: 45 44 41;     --slate-100: 53 51 48;    --slate-200: 64 62 58;    --slate-300: 86 83 78;
+  --slate-400: 138 135 128; --slate-500: 166 163 156; --slate-600: 194 191 184; --slate-700: 217 214 207;
+  --slate-800: 233 231 225; --slate-900: 246 245 241;
+
+  --blue-50: 30 52 53;   --blue-100: 36 66 67;   --blue-200: 44 90 92;   --blue-300: 52 115 118; --blue-400: 64 145 148;
+  --blue-500: 81 203 206; --blue-600: 104 210 213; --blue-700: 128 222 224; --blue-800: 170 233 235; --blue-900: 212 244 245;
+
+  --indigo-50: 30 48 54;   --indigo-100: 36 60 68;   --indigo-200: 44 82 94;   --indigo-300: 52 105 120; --indigo-400: 64 135 155;
+  --indigo-500: 81 188 218; --indigo-600: 100 192 214; --indigo-700: 140 210 232; --indigo-800: 170 222 232; --indigo-900: 210 238 243;
+
+  --emerald-50: 30 50 39;   --emerald-100: 36 64 48;   --emerald-200: 46 88 64;   --emerald-300: 56 112 80; --emerald-400: 70 145 102;
+  --emerald-500: 107 208 152; --emerald-600: 128 215 166; --emerald-700: 150 226 182; --emerald-800: 178 230 200; --emerald-900: 213 242 225;
+
+  --orange-50: 58 38 31;   --orange-100: 72 44 35;   --orange-200: 98 56 43;   --orange-300: 130 70 50; --orange-400: 175 90 60;
+  --orange-500: 241 126 93; --orange-600: 243 146 118; --orange-700: 248 172 150; --orange-800: 250 196 176; --orange-900: 252 224 216;
+
+  --amber-50: 56 48 27;   --amber-100: 70 58 30;   --amber-200: 98 80 36;   --amber-300: 130 105 45; --amber-400: 180 145 55;
+  --amber-500: 251 198 88; --amber-600: 252 208 100; --amber-700: 253 216 140; --amber-800: 254 229 164; --amber-900: 254 243 204;
+
+  --rose-50: 60 36 29;   --rose-100: 74 42 33;   --rose-200: 102 56 43;   --rose-300: 135 68 50; --rose-400: 180 85 60;
+  --rose-500: 239 129 87; --rose-600: 242 148 112; --rose-700: 247 172 142; --rose-800: 250 196 176; --rose-900: 253 223 212;
+
+  --violet-50: 44 38 64;   --violet-100: 54 46 80;   --violet-200: 70 58 106;  --violet-300: 90 75 135; --violet-400: 115 95 170;
+  --violet-500: 145 116 236; --violet-600: 165 140 242; --violet-700: 196 182 250; --violet-800: 214 200 251; --violet-900: 234 226 253;
+
+  --pink-50: 62 34 47;   --pink-100: 76 40 57;   --pink-200: 102 52 75;   --pink-300: 130 65 95;  --pink-400: 170 80 120;
+  --pink-500: 230 98 154; --pink-600: 236 124 172; --pink-700: 246 164 202; --pink-800: 247 189 214; --pink-900: 251 219 233;
+
+  --c-grid: #3a3835; --c-tick: #8a8780; --c-unknown: #55524d; --c-muted: #8a8780;
+  --tt-bg: #2d2c29; --tt-text: #f4f3ef;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: rgb(var(--page));
+  color: rgb(var(--slate-900));
+  font-family: 'Montserrat', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .25s ease, color .25s ease;
+}
+
+/* Smooth theme switch for surfaces */
+.bg-card, .bg-page, aside, header { transition: background-color .25s ease, border-color .25s ease, color .25s ease; }
+
+/* Recharts tooltip + legend follow the theme */
+.recharts-default-tooltip {
+  background: var(--tt-bg) !important;
+  border: 1px solid var(--c-grid) !important;
+  border-radius: 10px !important;
+  color: var(--tt-text);
+  box-shadow: 0 6px 16px -6px rgb(0 0 0 / .25);
+}
+.recharts-tooltip-label { color: var(--tt-text) !important; font-weight: 600; }
+.recharts-legend-item-text { color: rgb(var(--slate-600)) !important; }
+.recharts-tooltip-cursor { fill: rgb(var(--slate-100)) !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(var(--slate-300)); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--slate-400)); }
+
+/* Native form controls in dark mode */
+select, input { color: rgb(var(--slate-900)); }
+option { background: rgb(var(--card)); }
+
+/* ---------- Login page motion ---------- */
+@keyframes mv-aurora { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(40px,-30px) scale(1.1); } 66% { transform: translate(-30px,25px) scale(.95); } }
+@keyframes mv-spin { to { transform: rotate(360deg); } }
+@keyframes mv-spin-rev { to { transform: rotate(-360deg); } }
+@keyframes mv-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes mv-fade-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes mv-pulse-ring { 0% { transform: scale(.85); opacity: .6; } 100% { transform: scale(1.6); opacity: 0; } }
+@keyframes mv-scan { 0% { top: 0%; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+@keyframes mv-shine { from { transform: translateX(-120%); } to { transform: translateX(220%); } }
+.mv-aurora { animation: mv-aurora 16s ease-in-out infinite; }
+.mv-spin-slow { animation: mv-spin 40s linear infinite; }
+.mv-spin-rev { animation: mv-spin-rev 28s linear infinite; }
+.mv-sweep { animation: mv-spin 6s linear infinite; }
+.mv-float { animation: mv-float 6s ease-in-out infinite; }
+.mv-fade-up { animation: mv-fade-up .7s cubic-bezier(.2,.7,.2,1) both; }
+.mv-pulse-ring { animation: mv-pulse-ring 2.8s ease-out infinite; }
+.mv-scan { animation: mv-scan 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+.mv-shine { position: relative; overflow: hidden; }
+.mv-shine::after { content: ""; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg, transparent, rgb(255 255 255 / .35), transparent); transform: translateX(-120%); }
+.mv-shine:hover::after { animation: mv-shine .9s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .mv-aurora, .mv-spin-slow, .mv-spin-rev, .mv-sweep, .mv-float, .mv-fade-up, .mv-pulse-ring, .mv-scan { animation: none !important; }
+}

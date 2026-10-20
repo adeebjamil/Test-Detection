@@ -1,0 +1,45 @@
+# Python & Virtual Environments
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.cache
+yolov8n-cls.pt
+
+# Node / Web builds
+node_modules/
+.next/
+dist/
+build/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Live preview & temp buffers
+preview/
+backend/data/preview/
+*.db-wal
+*.db-shm
+*.tmp
+*.log
+
+# Large raw training datasets and training runs
+analytics_modules/modules/DressCode/
+analytics_modules/modules/raw_downloads/
+analytics_modules/modules/dataset/
+analytics_modules/modules/emirati_dataset_v2/
+analytics_modules/modules/runs_emirati/
+analytics_modules/modules/*.zip
+runs/
+
+# Large public pretrained weights (downloadable via python download_models.py --demographics)
+*.caffemodel
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
